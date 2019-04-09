@@ -2,9 +2,16 @@ package main
 
 import (
 	"log"
-	"time"
+    "sync"
+	"os"
 	"math/rand"
 )
+
+// declare a global var that counts the total numbers to be printed
+var num = 0
+
+// declare a var to lock the num var while it will increment its value
+var mutex = &sync.Mutex{}
 
 func problem1() {
 
@@ -20,34 +27,46 @@ func problem1() {
 	// Do not change the 25 in loop!
 	//
 
+	// declare a variable that holds the go routines queue sync execution
+	var wg sync.WaitGroup
+
 	for inx := 0; inx < 10; inx++ {
 
-		go printRandom1(inx)
+		// adding the next go routine to the wait group queue
+		wg.Add(1)
+
+		go printRandom1(&wg, inx)
 
 	}
 
-	//
-	// Todo:
-	//
-	// Remove this quick and dirty sleep
-	// against a synchronized wait until all
-	// go routines are finished.
-	//
-
-	time.Sleep(5 * time.Second)
+	// instruction that allows problem1 function to wait for the ending of the go routines executions
+	wg.Wait()
 
 	log.Printf("problem1: finised --------------------------------------------")
 }
 
-func printRandom1(slot int) {
+func printRandom1(wg *sync.WaitGroup, slot int) {
 
 	//
 	// Do not change 25 into 10!
 	//
-
+	defer wg.Done()
 	for inx := 0; inx < 25; inx++ {
 
-		log.Printf("problem1: slot=%03d count=%05d rand=%f", slot, inx, rand.Float32())
+		// locking the num var...
+		mutex.Lock()
+		num++ // increment the num var value
+		mutex.Unlock()
+		// unlocking the num var
+
+		// if the num var is equal to 100...
+		if num == 100 {
+			// exit from the go routine
+			os.Exit(0)
+		}else{
+			// otherwise print the rand number
+			log.Printf("problem1: slot=%03d count=%05d rand=%f", slot, inx, rand.Float32())
+		}
 
 	}
 }
