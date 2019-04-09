@@ -13,6 +13,9 @@ var num = 0
 // declare a var to lock the num var while it will increment its value
 var mutex = &sync.Mutex{}
 
+// declare a variable that holds the go routines queue sync execution
+var wg sync.WaitGroup
+
 func problem1() {
 
 	log.Printf("problem1: started --------------------------------------------")
@@ -27,15 +30,13 @@ func problem1() {
 	// Do not change the 25 in loop!
 	//
 
-	// declare a variable that holds the go routines queue sync execution
-	var wg sync.WaitGroup
 
 	for inx := 0; inx < 10; inx++ {
 
 		// adding the next go routine to the wait group queue
 		wg.Add(1)
 
-		go printRandom1(&wg, inx)
+		go printRandom1(inx)
 
 	}
 
@@ -45,7 +46,7 @@ func problem1() {
 	log.Printf("problem1: finised --------------------------------------------")
 }
 
-func printRandom1(wg *sync.WaitGroup, slot int) {
+func printRandom1(slot int) {
 
 	//
 	// Do not change 25 into 10!
@@ -55,9 +56,11 @@ func printRandom1(wg *sync.WaitGroup, slot int) {
 
 		// locking the num var...
 		mutex.Lock()
+		
 		num++ // increment the num var value
-		mutex.Unlock()
+
 		// unlocking the num var
+		mutex.Unlock()
 
 		// if the num var is equal to 100...
 		if num == 100 {
